@@ -87,5 +87,4 @@ func (c *Container) Flush() {
 		}
 		delete(c.store, key)
 	}
-	c = nil
 }

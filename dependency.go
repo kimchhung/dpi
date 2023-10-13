@@ -1,23 +1,27 @@
 package dpi
 
-import "reflect"
+import (
+	"reflect"
+	"sync"
+)
 
-type Dependency map[string]any
-
-func (s Dependency) Name() string {
-	for k := range s {
-		return k
-	}
-
-	return ""
+type Dependency struct {
+	name  string
+	value any
 }
 
-func (s Dependency) Value() any {
-	for _, v := range s {
-		return v
-	}
+func (s *Dependency) Name() string {
+	return s.name
+}
 
-	return nil
+func (s *Dependency) Value() any {
+	return s.value
+}
+
+var dependencyPool = sync.Pool{
+	New: func() interface{} {
+		return &Dependency{}
+	},
 }
 
 func toDependency(dependency any) *Dependency {
@@ -30,13 +34,13 @@ func toDependency(dependency any) *Dependency {
 
 // For Manual Mapping `inject:"true", name:"myDep1"`
 func WithName(name string, dependency any) *Dependency {
+	dep := dependencyPool.Get().(*Dependency)
+	dep.name = name
+	dep.value = dependency
+
 	if name == "" {
-		return &Dependency{
-			reflect.TypeOf(dependency).String(): dependency,
-		}
+		dep.name = reflect.TypeOf(dependency).String()
 	}
 
-	return &Dependency{
-		name: dependency,
-	}
+	return dep
 }

@@ -57,70 +57,64 @@ func InjectFromContext[T any](ctx context.Context, to T) (T, error) {
 	toType := reflect.TypeOf(to).Elem()
 	toValue := reflect.ValueOf(to).Elem()
 
-	MaxInjection := []int{0, 0}
-	MaxLazyInjection := []int{0, 0}
+	maxInjection := []uint{0, 0}
+	maxLazyInjection := []uint{0, 0}
+
+	cacheField := make(map[int]reflect.StructField)
 
 	for i := 0; i < toType.NumField(); i++ {
-		field := toType.Field(i)
-		tagName := field.Tag.Get("inject")
+		cacheField[i] = toType.Field(i)
+		tagName := cacheField[i].Tag.Get("inject")
 		if strings.Contains(tagName, "true") {
-
 			if strings.Contains(tagName, "lazy") {
-				MaxLazyInjection[1]++
+				maxLazyInjection[1]++
 			} else {
-				MaxInjection[1]++
+				maxInjection[1]++
 			}
 		}
 	}
 
 	for i := 0; i < toType.NumField(); i++ {
-		field := toType.Field(i)
-		tag := field.Tag.Get("inject")
-		tagName := field.Tag.Get("name")
-		isLazy := strings.Contains(tag, "lazy")
+		tag := cacheField[i].Tag.Get("inject")
+		isInject := strings.Contains(tag, "true")
 
-		if tagName == "" {
-			tagName = field.Type.String()
-		}
+		if isInject {
+			tagName := cacheField[i].Tag.Get("name")
+			isLazy := strings.Contains(tag, "lazy")
 
-		assignValue := func(toFieldNumber int, service any, startTime time.Time) {
-			sv := reflect.ValueOf(service)
-			st := reflect.TypeOf(service)
+			if tagName == "" {
+				tagName = cacheField[i].Type.String()
+			}
 
-			if st.AssignableTo(toType.Field(toFieldNumber).Type) {
+			assignValue := func(toFieldNumber int, service any, startTime time.Time) {
+				sv := reflect.ValueOf(service)
 				toValue.Field(toFieldNumber).Set(sv)
+
+				if isLazy {
+					maxLazyInjection[0]++
+					log.Printf("%s: %s %d/%d <- [%v] Lazy %s", prefixName, toType.Name(), maxLazyInjection[0], maxLazyInjection[1], time.Since(startTime), tagName)
+				} else {
+					maxInjection[0]++
+					log.Printf("%s: %s %d/%d <- [%v] %s", prefixName, toType.Name(), maxInjection[0], maxInjection[1], time.Since(startTime), tagName)
+				}
 			}
 
-			if isLazy {
-				MaxLazyInjection[0]++
-				log.Printf("%s: %s %d/%d <- [%v] Lazy %s", prefixName, toType.Name(), MaxLazyInjection[0], MaxLazyInjection[1], time.Since(startTime), tagName)
-			} else {
-				MaxInjection[0]++
-				log.Printf("%s: %s %d/%d <- [%v] %s", prefixName, toType.Name(), MaxInjection[0], MaxInjection[1], time.Since(startTime), tagName)
-			}
-		}
+			getValueFromContext := func(fieldNumber int, startTime time.Time) any {
+				if service := c.Get(tagName); service != nil {
+					assignValue(fieldNumber, service, startTime)
+					return service
+				}
 
-		getValueFromContext := func(fieldNumber int, startTime time.Time) any {
-			if service := c.Get(tagName); service != nil {
-				assignValue(fieldNumber, service, startTime)
-				return service
+				return nil
 			}
 
-			return nil
-		}
-
-		if strings.Contains(tag, "true") {
 			if isLazy {
 				c.wg.Add(1)
 				go func(_i int, _getValueFromContext func(i int, startTime time.Time) any) {
 					defer c.wg.Done()
 					startTime := time.Now()
 					for service := _getValueFromContext(_i, startTime); service == nil; service = _getValueFromContext(_i, startTime) {
-						time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
-
-						// Timeout if it is too long
-						<-time.After(5 * time.Second) // Adjust this timeout as needed
-						log.Panicf("Timeout waiting for service: %v", tagName)
+						time.Sleep(time.Duration(rand.Intn(1000)) * time.Nanosecond)
 					}
 				}(i, getValueFromContext)
 			} else {
