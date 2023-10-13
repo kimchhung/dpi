@@ -86,9 +86,10 @@ func main() {
 		NewServiceB(ctx),
 	)
 
+	api := NewAPI(ctx)
+
 	// wait for lazy injection
 	dpi.FromContext(ctx).Wait()
 
-	api := NewAPI(ctx)
 	api.Print()
 }

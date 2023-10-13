@@ -93,10 +93,10 @@ func InjectFromContext[T any](ctx context.Context, to T) (T, error) {
 
 			if isLazy {
 				MaxLazyInjection[0]++
-				log.Printf("[%s]: %s %d/%d <- [%v] Lazy %s", prefixName, toType.Name(), MaxLazyInjection[0], MaxLazyInjection[1], time.Since(startTime), tagName)
+				log.Printf("%s: %s %d/%d <- [%v] Lazy %s", prefixName, toType.Name(), MaxLazyInjection[0], MaxLazyInjection[1], time.Since(startTime), tagName)
 			} else {
 				MaxInjection[0]++
-				log.Printf("[%s]: %s %d/%d <- [%v] %s", prefixName, toType.Name(), MaxInjection[0], MaxInjection[1], time.Since(startTime), tagName)
+				log.Printf("%s: %s %d/%d <- [%v] %s", prefixName, toType.Name(), MaxInjection[0], MaxInjection[1], time.Since(startTime), tagName)
 			}
 		}
 

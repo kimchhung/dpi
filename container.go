@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-const prefixName = "DPI"
+const prefixName = "\033[35m[DPI]\033[0m"
 
 type Container struct {
 	ctx   context.Context
@@ -59,7 +59,7 @@ func (c *Container) Wait() {
 		count++
 	}
 
-	log.Printf("[%s]: Dependencies: %d", prefixName, count)
+	log.Printf("%s: Dependencies: %d", prefixName, count)
 }
 
 func (c *Container) Context() context.Context {
