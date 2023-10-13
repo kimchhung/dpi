@@ -6,3 +6,7 @@ github.com/kimchhung/dpi v1.0.3 h1:cIvAiYl2mdCOCUvOjLWYMfH/eiph307c4DaiKah5xjY=
 github.com/kimchhung/dpi v1.0.3/go.mod h1:IU8wEJmEnI9Pftqmre1ntn4cs17oguOfuOSWo8IMzSU=
 github.com/kimchhung/dpi v1.0.4 h1:PCmEyAJv5pSfAmb9Auwg+txpMGEQobwL/5fICRIdw5M=
 github.com/kimchhung/dpi v1.0.4/go.mod h1:IU8wEJmEnI9Pftqmre1ntn4cs17oguOfuOSWo8IMzSU=
+github.com/kimchhung/dpi v1.0.6 h1:x6z1lUmOshmH/KpI1uMGT1wc45T151eVAo/mhTrgxbw=
+github.com/kimchhung/dpi v1.0.6/go.mod h1:IU8wEJmEnI9Pftqmre1ntn4cs17oguOfuOSWo8IMzSU=
+github.com/kimchhung/dpi v1.0.7 h1:n1Eryo3dDH1GQrJ9CtcqX+L5jIMeTp0q3SQziNC6rSc=
+github.com/kimchhung/dpi v1.0.7/go.mod h1:IU8wEJmEnI9Pftqmre1ntn4cs17oguOfuOSWo8IMzSU=
