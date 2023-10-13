@@ -1,31 +1,41 @@
 # dpi
-Simple dependency injection
+Simple dependency injection base on context.Context from golang
 
 
-// use ProvideWithContext to provice dependencies to context
 main.go
 
 ```
+func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	// cleanup
 
-  // Provider 
 	ctx = dpi.ProvideWithContext(
 		ctx,
+		// eg consumer: DB   *database.DBConn `inject:"true"`
 		database.New("no name"),
 
-		// with custom name
+		// eg consumer: DB   *database.DBConn `inject:"true" name:"myAnotherDB"`
 		dpi.WithName("myAnotherDB", database.New("with name")),
 	)
 
-  // Provider | Consumer
-
-        // for circular dependency injection, need to use inject:"true,lazy"
 	ctx = dpi.ProvideWithContext(ctx,
+		// eg inject B to A, ServiceB *ServiceB        `inject:"true,lazy"`
 		services.NewServiceA(ctx),
+
+		// eg inject A to B, ServiceA *ServiceA        `inject:"true,lazy"`
 		services.NewServiceB(ctx),
 	)
+
+  // consumer
+	api := NewAPI(ctx)
+
+	// wait for lazy injection
+	dpi.FromContext(ctx).Wait()
+
+	api.Print()
+}
+
 ```
 
 Services Provider | Consumer

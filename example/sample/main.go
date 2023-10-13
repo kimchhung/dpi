@@ -40,14 +40,18 @@ func main() {
 
 	ctx = dpi.ProvideWithContext(
 		ctx,
+		// eg consumer: DB   *database.DBConn `inject:"true"`
 		database.New("no name"),
 
-		// with custom name
+		// eg consumer: DB   *database.DBConn `inject:"true" name:"myAnotherDB"`
 		dpi.WithName("myAnotherDB", database.New("with name")),
 	)
 
 	ctx = dpi.ProvideWithContext(ctx,
+		// eg inject B to A, ServiceB *ServiceB        `inject:"true,lazy"`
 		services.NewServiceA(ctx),
+
+		// eg inject A to B, ServiceA *ServiceA        `inject:"true,lazy"`
 		services.NewServiceB(ctx),
 	)
 
@@ -55,5 +59,6 @@ func main() {
 
 	// wait for lazy injection
 	dpi.FromContext(ctx).Wait()
+
 	api.Print()
 }
