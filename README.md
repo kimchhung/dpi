@@ -20,6 +20,8 @@ main.go
 	)
 
   // Provider | Consumer
+
+        // for circular dependency injection, need to use inject:"true,lazy"
 	ctx = dpi.ProvideWithContext(ctx,
 		services.NewServiceA(ctx),
 		services.NewServiceB(ctx),
@@ -28,9 +30,26 @@ main.go
 
 Services Provider | Consumer
 ```
+type ServiceA struct {
+	DB       *database.DBConn `inject:"true"`
+	ServiceB *ServiceB        `inject:"true,lazy"` // circular dependency injection
+}
+
+func NewServiceA(ctx context.Context) *ServiceA {
+	s := &ServiceA{}
+	if _, err := dpi.InjectFromContext(ctx, s); err != nil {
+		panic(err)
+	}
+
+	return s
+}
+
+```
+
+```
 type ServiceB struct {
 	DB       *database.DBConn `inject:"true"`
-	ServiceA *ServiceA        `inject:"true,lazy"`
+	ServiceA *ServiceA        `inject:"true,lazy"` // circular dependency injection
 }
 
 // use InjectFromContext to extract dependencies from context
