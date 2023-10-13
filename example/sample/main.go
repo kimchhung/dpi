@@ -3,66 +3,18 @@ package main
 import (
 	"context"
 	"log"
+	"sample/database"
+	"sample/services"
 
 	"github.com/kimchhung/dpi"
 )
 
-type DBConn struct {
-}
-
-func (d *DBConn) Name() string {
-	return "this is DB"
-}
-
-type ServiceA struct {
-	DB       *DBConn   `inject:"true"`
-	ServiceB *ServiceB `inject:"true,lazy"`
-}
-
-func NewServiceA(ctx context.Context) *ServiceA {
-	s := &ServiceA{}
-	if _, err := dpi.InjectFromContext(ctx, s); err != nil {
-		panic(err)
-	}
-
-	return s
-}
-
-func (s *ServiceA) Name() string {
-	return "this is Service A"
-}
-
-func (s *ServiceA) Print() string {
-	log.Printf("from [A]: %s,%s ", s.DB.Name(), s.ServiceB.Name())
-	return s.DB.Name()
-}
-
-type ServiceB struct {
-	DB       *DBConn   `inject:"true"`
-	ServiceA *ServiceA `inject:"true,lazy"`
-}
-
-func NewServiceB(ctx context.Context) *ServiceB {
-	s, err := dpi.InjectFromContext(ctx, &ServiceB{})
-	if err != nil {
-		panic(err)
-	}
-
-	return s
-}
-
-func (s *ServiceB) Name() string {
-	return "this is Service B"
-}
-
-func (s *ServiceB) Print() string {
-	log.Printf("from [B]: %s,%s ", s.DB.Name(), s.ServiceA.Name())
-	return s.DB.Name()
-}
-
 type API struct {
-	ServiceA *ServiceA `inject:"true"`
-	ServiceB *ServiceB `inject:"true"`
+	ServiceA *services.ServiceA `inject:"true"`
+	ServiceB *services.ServiceB `inject:"true"`
+
+	DBNo *database.DBConn `inject:"true"`
+	DB   *database.DBConn `inject:"true" name:"myAnotherDB"`
 }
 
 func NewAPI(ctx context.Context) *API {
@@ -75,21 +27,30 @@ func NewAPI(ctx context.Context) *API {
 }
 
 func (api *API) Print() {
+	log.Printf("db no name: %v", api.DBNo.Name())
+	log.Printf("db name: %v", api.DB.Name())
 	api.ServiceA.Print()
 	api.ServiceB.Print()
 }
 
 func main() {
-	ctx := dpi.ProvideWithContext(context.Background(), &DBConn{})
+	ctx := dpi.ProvideWithContext(
+		context.Background(),
+		database.New("no name"),
+
+		// with custom name
+		dpi.WithName("myAnotherDB", database.New("with name")),
+	)
+
 	ctx = dpi.ProvideWithContext(ctx,
-		NewServiceA(ctx),
-		NewServiceB(ctx),
+		services.NewServiceA(ctx),
+		services.NewServiceB(ctx),
 	)
 
 	api := NewAPI(ctx)
 
 	// wait for lazy injection
 	dpi.FromContext(ctx).Wait()
-
 	api.Print()
+
 }
