@@ -35,8 +35,8 @@ func (api *API) Print() {
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-	// cleanup
 	defer cancel()
+	// cleanup
 
 	ctx = dpi.ProvideWithContext(
 		ctx,

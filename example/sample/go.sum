@@ -4,3 +4,5 @@ github.com/kimchhung/dpi v1.0.2 h1:HRcxMIGmjrnDWIowyK/PArHiQbF6w61Wi4YgmSSawqM=
 github.com/kimchhung/dpi v1.0.2/go.mod h1:IU8wEJmEnI9Pftqmre1ntn4cs17oguOfuOSWo8IMzSU=
 github.com/kimchhung/dpi v1.0.3 h1:cIvAiYl2mdCOCUvOjLWYMfH/eiph307c4DaiKah5xjY=
 github.com/kimchhung/dpi v1.0.3/go.mod h1:IU8wEJmEnI9Pftqmre1ntn4cs17oguOfuOSWo8IMzSU=
+github.com/kimchhung/dpi v1.0.4 h1:PCmEyAJv5pSfAmb9Auwg+txpMGEQobwL/5fICRIdw5M=
+github.com/kimchhung/dpi v1.0.4/go.mod h1:IU8wEJmEnI9Pftqmre1ntn4cs17oguOfuOSWo8IMzSU=
