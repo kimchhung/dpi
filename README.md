@@ -93,3 +93,12 @@ func NewAPI(ctx context.Context) *API {
 	return s
 }
 ```
+
+Benchmark
+
+```
+62553             19803 ns/op            1896 B/op         34 allocs/op
+PASS
+ok      github.com/kimchhung/dpi        1.537s
+
+```
