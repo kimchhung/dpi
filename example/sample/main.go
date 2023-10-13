@@ -34,8 +34,12 @@ func (api *API) Print() {
 }
 
 func main() {
-	ctx := dpi.ProvideWithContext(
-		context.Background(),
+	ctx, cancel := context.WithCancel(context.Background())
+	// cleanup
+	defer cancel()
+
+	ctx = dpi.ProvideWithContext(
+		ctx,
 		database.New("no name"),
 
 		// with custom name
@@ -52,5 +56,4 @@ func main() {
 	// wait for lazy injection
 	dpi.FromContext(ctx).Wait()
 	api.Print()
-
 }

@@ -24,6 +24,12 @@ func NewContainer(ctx context.Context) *Container {
 	c := &Container{}
 	c.store = make(map[string]any)
 	c.ctx = context.WithValue(ctx, containerKey, c)
+
+	go func() {
+		<-ctx.Done()
+		c.Flush()
+	}()
+
 	return c
 }
 
@@ -72,4 +78,14 @@ func (c *Container) Provide(dependencies ...any) *Container {
 	}
 
 	return c
+}
+
+func (c *Container) Flush() {
+	for key, dep := range c.store {
+		if dep != nil {
+			dep = nil
+		}
+		delete(c.store, key)
+	}
+	c = nil
 }
