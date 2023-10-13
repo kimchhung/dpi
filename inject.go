@@ -3,7 +3,6 @@ package dpi
 import (
 	"context"
 	"fmt"
-	"log"
 	"math/rand"
 	"reflect"
 	"strings"
@@ -30,16 +29,14 @@ func Validate[T any](r T, injectType ...string) error {
 		}
 
 		if strings.Contains(tag, "true") {
-			isLazyField := !strings.Contains(tag, "lazy")
-			if typeInject == "true" && isLazyField {
+			isLazyField := strings.Contains(tag, "lazy")
+			if typeInject == "true" && !isLazyField {
 				if rv.Field(i).IsNil() || rv.Field(i).IsZero() {
 					return fmt.Errorf("inject [%v] %v is missing", rt.Name(), field.Name)
 				}
-			} else if typeInject == "lazy" {
-				if strings.Contains(tag, "lazy") {
-					if rv.Field(i).IsNil() || rv.Field(i).IsZero() {
-						return fmt.Errorf("inject [%v] %v is missing", rt.Name(), field.Name)
-					}
+			} else if typeInject == "lazy" && isLazyField {
+				if rv.Field(i).IsNil() || rv.Field(i).IsZero() {
+					return fmt.Errorf("inject [%v] %v is missing", rt.Name(), field.Name)
 				}
 			}
 		}
@@ -92,10 +89,10 @@ func InjectFromContext[T any](ctx context.Context, to T) (T, error) {
 
 				if isLazy {
 					maxLazyInjection[0]++
-					log.Printf("%s: %s %d/%d <- [%v] Lazy %s", prefixName, toType.Name(), maxLazyInjection[0], maxLazyInjection[1], time.Since(startTime), tagName)
+					c.log.Printf("%s <- %d/%d `%v` (Lazy) %s", toType, maxLazyInjection[0], maxLazyInjection[1], time.Since(startTime), tagName)
 				} else {
 					maxInjection[0]++
-					log.Printf("%s: %s %d/%d <- [%v] %s", prefixName, toType.Name(), maxInjection[0], maxInjection[1], time.Since(startTime), tagName)
+					c.log.Printf("%s <- %d/%d `%v` %s", toType, maxInjection[0], maxInjection[1], time.Since(startTime), tagName)
 				}
 			}
 

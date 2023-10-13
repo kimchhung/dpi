@@ -96,9 +96,20 @@ func NewAPI(ctx context.Context) *API {
 
 Benchmark
 
+two simple injections
 ```
-62553             19803 ns/op            1896 B/op         34 allocs/op
+   68794             18141 ns/op            1979 B/op         34 allocs/op
 PASS
-ok      github.com/kimchhung/dpi        1.537s
+ok      github.com/kimchhung/dpi        1.506s
 
 ```
+
+
+two lazy injections
+```
+   41380             27898 ns/op            2054 B/op         41 allocs/op
+PASS
+ok      github.com/kimchhung/dpi        1.699s
+
+```
+

@@ -3,17 +3,19 @@ package dpi
 import (
 	"context"
 	"log"
+	"os"
 
 	"sync"
 )
 
-const prefixName = "\033[35m[DPI]\033[0m"
+const prefixName = "\033[35m[dpi]\033[0m "
 
 type Container struct {
 	ctx   context.Context
 	store map[string]any
 	mu    sync.RWMutex
 	wg    sync.WaitGroup
+	log   *log.Logger
 }
 
 type ContainerKey string
@@ -22,6 +24,7 @@ var containerKey ContainerKey = "containerKey"
 
 func NewContainer(ctx context.Context) *Container {
 	c := &Container{}
+	c.log = log.New(os.Stdout, prefixName, 0)
 	c.store = make(map[string]any)
 	c.ctx = context.WithValue(ctx, containerKey, c)
 
@@ -65,7 +68,7 @@ func (c *Container) Wait() {
 		count++
 	}
 
-	log.Printf("%s: Dependencies: %d", prefixName, count)
+	c.log.Printf("Dependencies: %d", count)
 }
 
 func (c *Container) Context() context.Context {
