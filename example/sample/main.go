@@ -29,12 +29,12 @@ func (api *API) Print() {
 }
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	c, cleanup := dpi.New(context.Background())
+	defer cleanup()
 	// cleanup
 
-	ctx = dpi.ProvideWithContext(
-		ctx,
+	ctx := dpi.ProvideWithContext(
+		c.Context(),
 		// eg consumer: DB   *database.DBConn `inject:"true"`
 		database.New("no name"),
 
@@ -55,5 +55,32 @@ func main() {
 	// wait for lazy injection
 	dpi.FromContext(ctx).Wait()
 
+	api.Print()
+}
+
+func AlternativeExample() {
+	c, cleanup := dpi.New(context.Background())
+	defer cleanup()
+	// cleanup
+
+	c.Provide(
+		database.New("no name"),
+
+		// eg consumer: DB   *database.DBConn `inject:"true" name:"myAnotherDB"`
+		dpi.WithName("myAnotherDB", database.New("with name")),
+	)
+
+	c.Provide(
+		// eg inject B to A, ServiceB *ServiceB        `inject:"true,lazy"`
+		services.NewServiceA(c.Context()),
+
+		// eg inject A to B, ServiceA *ServiceA        `inject:"true,lazy"`
+		services.NewServiceB(c.Context()),
+	)
+
+	api := NewAPI(c.Context())
+
+	// wait for lazy injection
+	dpi.FromContext(c.Context()).Wait()
 	api.Print()
 }
