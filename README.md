@@ -10,6 +10,7 @@ func main() {
 	defer cancel()
 	// cleanup
 
+  // as provider
 	ctx = dpi.ProvideWithContext(
 		ctx,
 		// eg consumer: DB   *database.DBConn `inject:"true"`
@@ -19,6 +20,7 @@ func main() {
 		dpi.WithName("myAnotherDB", database.New("with name")),
 	)
 
+  // as provider and consumer
 	ctx = dpi.ProvideWithContext(ctx,
 		// eg inject B to A, ServiceB *ServiceB        `inject:"true,lazy"`
 		services.NewServiceA(ctx),
@@ -27,7 +29,7 @@ func main() {
 		services.NewServiceB(ctx),
 	)
 
-  // consumer
+  // as consumer
 	api := NewAPI(ctx)
 
 	// wait for lazy injection
@@ -37,44 +39,31 @@ func main() {
 }
 
 ```
-
-Services Provider | Consumer
+Services Provider | Consumer, A <-> B
 ```
+// consume *ServiceB
 type ServiceA struct {
 	DB       *database.DBConn `inject:"true"`
-	ServiceB *ServiceB        `inject:"true,lazy"` // circular dependency injection
+	ServiceB *ServiceB        `inject:"true,lazy"` // A <-> B circular dependency injection
 }
 
 func NewServiceA(ctx context.Context) *ServiceA {
-	s := &ServiceA{}
-	if _, err := dpi.InjectFromContext(ctx, s); err != nil {
-		panic(err)
-	}
-
-	return s
+	return dpi.MustInjectFromContext(ctx, new(ServiceA))
 }
 
-```
-
-```
+// consume *ServiceA
 type ServiceB struct {
 	DB       *database.DBConn `inject:"true"`
-	ServiceA *ServiceA        `inject:"true,lazy"` // circular dependency injection
+	ServiceA *ServiceA        `inject:"true,lazy"` // A <-> B circular dependency injection
 }
 
 // use InjectFromContext to extract dependencies from context
-func NewServiceA(ctx context.Context) *ServiceA {
-	s := &ServiceA{}
-	if _, err := dpi.InjectFromContext(ctx, s); err != nil {
-		panic(err)
-	}
-
-	return s
+func NewServiceB(ctx context.Context) *ServiceB {
+	return dpi.MustInjectFromContext(ctx, new(ServiceB))
 }
 ```
 
 Consumer
-
 ```
 type API struct {
 	ServiceA *services.ServiceA `inject:"true"`
@@ -85,12 +74,7 @@ type API struct {
 }
 
 func NewAPI(ctx context.Context) *API {
-	s := &API{}
-	if _, err := dpi.InjectFromContext(ctx, s); err != nil {
-		panic(err)
-	}
-
-	return s
+	return dpi.MustInjectFromContext(ctx, new(API))
 }
 ```
 
