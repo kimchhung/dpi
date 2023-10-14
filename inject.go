@@ -109,7 +109,7 @@ func InjectFromContext[T any](ctx context.Context, to T) (T, error) {
 			}
 
 			getValueFromContext := func(fieldNumber int, startTime time.Time) any {
-				if service := c.Get(tagName); service != nil {
+				if service := c.get(tagName); service != nil {
 					assignValue(fieldNumber, service, startTime)
 					return service
 				}

@@ -56,7 +56,7 @@ func (c *DPI) set(value any) {
 	c.store[dep.Name()] = dep.Value()
 }
 
-func (c *DPI) Get(key string) any {
+func (c *DPI) get(key string) any {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.store[key]

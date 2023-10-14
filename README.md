@@ -82,12 +82,24 @@ Benchmark
 
 two simple injections
 ```
+[dpi] dpi_test.DBComsumer <- 1/2 `42ns` *dpi_test.DBConn
+[dpi] dpi_test.DBComsumer <- 2/2 `41ns` anotherDB
+42 ns/op per extraction from ctx
+
    78619             16272 ns/op            1991 B/op         34 allocs/op
 ```
 
 
 two lazy injections
 ```
+[dpi] dpi_test.ServiceB <- 1/1 `42ns` (Lazy) *dpi_test.ServiceA
+[dpi] dpi_test.ServiceA <- 1/1 `83ns` (Lazy) *dpi_test.ServiceB
+[dpi] dpi_test.ServiceB <- 1/1 `41ns` (Lazy) *dpi_test.ServiceA
+[dpi] dpi_test.ServiceA <- 1/1 `84ns` (Lazy) *dpi_test.ServiceB
+[dpi] dpi_test.ServiceB <- 1/1 `125ns` (Lazy) *dpi_test.ServiceA
+[dpi] dpi_test.ServiceA <- 1/1 `42ns` (Lazy) *dpi_test.ServiceB
+<200 ns/op per extraction from ctx for lazy
+
   48290             22996 ns/op            1818 B/op         41 allocs/op
 ```
 
