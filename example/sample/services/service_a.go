@@ -14,12 +14,7 @@ type ServiceA struct {
 }
 
 func NewServiceA(ctx context.Context) *ServiceA {
-	s := &ServiceA{}
-	if _, err := dpi.InjectFromContext(ctx, s); err != nil {
-		panic(err)
-	}
-
-	return s
+	return dpi.MustInjectFromContext(ctx, new(ServiceA))
 }
 
 func (s *ServiceA) Name() string {

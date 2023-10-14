@@ -18,12 +18,7 @@ type API struct {
 }
 
 func NewAPI(ctx context.Context) *API {
-	s := &API{}
-	if _, err := dpi.InjectFromContext(ctx, s); err != nil {
-		panic(err)
-	}
-
-	return s
+	return dpi.MustInjectFromContext(ctx, new(API))
 }
 
 func (api *API) Print() {
