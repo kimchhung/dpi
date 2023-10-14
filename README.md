@@ -82,18 +82,12 @@ Benchmark
 
 two simple injections
 ```
-   68794             18141 ns/op            1979 B/op         34 allocs/op
-PASS
-ok      github.com/kimchhung/dpi        1.506s
-
+   78619             16272 ns/op            1991 B/op         34 allocs/op
 ```
 
 
 two lazy injections
 ```
-   41380             27898 ns/op            2054 B/op         41 allocs/op
-PASS
-ok      github.com/kimchhung/dpi        1.699s
-
+  48290             22996 ns/op            1818 B/op         41 allocs/op
 ```
 

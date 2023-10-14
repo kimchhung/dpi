@@ -10,7 +10,7 @@ import (
 
 const prefixName = "\033[35m[dpi]\033[0m "
 
-type Container struct {
+type DPI struct {
 	ctx   context.Context
 	store map[string]any
 	mu    sync.RWMutex
@@ -18,12 +18,18 @@ type Container struct {
 	log   *log.Logger
 }
 
-type ContainerKey string
+type DPIKey string
+type CleanupFunc func()
 
-var containerKey ContainerKey = "containerKey"
+var containerKey DPIKey = "containerKey"
 
-func NewContainer(ctx context.Context) *Container {
-	c := &Container{}
+func New(ctx context.Context) (*DPI, CleanupFunc) {
+	ctx, cancel := context.WithCancel(ctx)
+	return NewDPI(ctx), CleanupFunc(cancel)
+}
+
+func NewDPI(ctx context.Context) *DPI {
+	c := &DPI{}
 	c.log = log.New(os.Stdout, prefixName, 0)
 	c.store = make(map[string]any)
 	c.ctx = context.WithValue(ctx, containerKey, c)
@@ -36,28 +42,28 @@ func NewContainer(ctx context.Context) *Container {
 	return c
 }
 
-func FromContext(ctx context.Context) *Container {
-	if c, ok := ctx.Value(containerKey).(*Container); ok {
+func FromContext(ctx context.Context) *DPI {
+	if c, ok := ctx.Value(containerKey).(*DPI); ok {
 		return c
 	}
-	return NewContainer(ctx)
+	return NewDPI(ctx)
 }
 
-func (c *Container) set(value any) {
+func (c *DPI) set(value any) {
 	dep := toDependency(value)
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.store[dep.Name()] = dep.Value()
 }
 
-func (c *Container) Get(key string) any {
+func (c *DPI) Get(key string) any {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.store[key]
 }
 
 // wait for lazy injection, and validate
-func (c *Container) Wait() {
+func (c *DPI) Wait() {
 	c.wg.Wait() // Wait for all goroutines to finish
 	count := 0
 
@@ -71,11 +77,11 @@ func (c *Container) Wait() {
 	c.log.Printf("Dependencies: %d", count)
 }
 
-func (c *Container) Context() context.Context {
+func (c *DPI) Context() context.Context {
 	return c.ctx
 }
 
-func (c *Container) Provide(dependencies ...any) *Container {
+func (c *DPI) Provide(dependencies ...any) *DPI {
 	for _, _dep := range dependencies {
 		c.set(_dep)
 	}
@@ -83,7 +89,7 @@ func (c *Container) Provide(dependencies ...any) *Container {
 	return c
 }
 
-func (c *Container) Flush() {
+func (c *DPI) Flush() {
 	for key, dep := range c.store {
 		if dep != nil {
 			dep = nil

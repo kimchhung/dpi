@@ -57,7 +57,8 @@ func NewServiceA(ctx context.Context) *ServiceA {
 }
 
 func TestLazyInjection(t *testing.T) {
-	ctx := dpi.ProvideWithContext(context.Background())
+	c, _ := dpi.New(context.Background())
+	ctx := c.Context()
 
 	serviceA := NewServiceA(ctx)
 	serviceB := NewServiceB(ctx)
@@ -75,10 +76,9 @@ func BenchmarkInjection(b *testing.B) {
 	b.ReportAllocs()
 
 	for i := 0; i < b.N; i++ {
-		ctx, cleanup := context.WithCancel(context.TODO())
+		c, cleanup := dpi.New(context.Background())
 		defer cleanup()
 
-		c := dpi.NewContainer(ctx)
 		c.Provide(NewDBConn("defuault"), dpi.WithName("anotherDB", NewDBConn("anotherDB")))
 		c.Provide(
 			NewDBComsumer(c.Context()),
@@ -91,10 +91,9 @@ func BenchmarkLazyInjection(b *testing.B) {
 	b.ReportAllocs()
 
 	for i := 0; i < b.N; i++ {
-		ctx, cleanup := context.WithCancel(context.TODO())
+		c, cleanup := dpi.New(context.Background())
 		defer cleanup()
 
-		c := dpi.NewContainer(ctx)
 		c.Provide(
 			NewServiceA(c.Context()),
 			NewServiceB(c.Context()),
