@@ -49,6 +49,18 @@ func Validate[T any](r T, injectType ...string) error {
 // Auto `inject:"true"`,
 // Manual `inject:"true", name:"myDep1"`
 // Lazy for circle injection `inject:"true,lazy"`,
+func MustInjectFromContext[T any](from context.Context, to T) T {
+	s, err := InjectFromContext(from, to)
+	if err != nil {
+		panic(err)
+	}
+	return s
+}
+
+// Assign dynamically into fields from context:
+// Auto `inject:"true"`,
+// Manual `inject:"true", name:"myDep1"`
+// Lazy for circle injection `inject:"true,lazy"`,
 func InjectFromContext[T any](ctx context.Context, to T) (T, error) {
 	c := FromContext(ctx)
 	toType := reflect.TypeOf(to).Elem()
