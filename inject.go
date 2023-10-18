@@ -21,6 +21,10 @@ func Validate[T any](r T, injectType ...string) error {
 	rt := reflect.TypeOf(r).Elem()
 
 	for i := 0; i < rt.NumField(); i++ {
+		if rv.Field(i).Kind() != reflect.Pointer {
+			break
+		}
+
 		field := rt.Field(i)
 		tag := field.Tag.Get("inject")
 		typeInject := "true"
@@ -31,11 +35,11 @@ func Validate[T any](r T, injectType ...string) error {
 		if strings.Contains(tag, "true") {
 			isLazyField := strings.Contains(tag, "lazy")
 			if typeInject == "true" && !isLazyField {
-				if rv.Field(i).IsNil() || rv.Field(i).IsZero() {
+				if rv.Field(i).Kind() == reflect.Pointer && rv.Field(i).IsNil() {
 					return fmt.Errorf("inject [%v] %v is missing", rt.Name(), field.Name)
 				}
 			} else if typeInject == "lazy" && isLazyField {
-				if rv.Field(i).IsNil() || rv.Field(i).IsZero() {
+				if rv.Field(i).Kind() == reflect.Pointer && rv.Field(i).IsNil() {
 					return fmt.Errorf("inject [%v] %v is missing", rt.Name(), field.Name)
 				}
 			}
@@ -96,6 +100,7 @@ func InjectFromContext[T any](ctx context.Context, to T) (T, error) {
 			}
 
 			assignValue := func(toFieldNumber int, service any, startTime time.Time) {
+
 				sv := reflect.ValueOf(service)
 				toValue.Field(toFieldNumber).Set(sv)
 

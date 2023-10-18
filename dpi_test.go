@@ -2,6 +2,7 @@ package dpi_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/kimchhung/dpi"
@@ -23,12 +24,10 @@ type DBComsumer struct {
 }
 
 func NewDBComsumer(ctx context.Context) *DBComsumer {
-	s, err := dpi.InjectFromContext(ctx, &DBComsumer{})
-	if err != nil {
-		panic(err)
-	}
-
-	return s
+	injected := dpi.MustInjectFromContext(ctx, new(DBComsumer))
+	fmt.Printf("DB: %v \n", injected.DB.Name)
+	fmt.Printf("DB1: %v \n", injected.DB1.Name)
+	return injected
 }
 
 type ServiceA struct {
@@ -40,20 +39,11 @@ type ServiceB struct {
 }
 
 func NewServiceB(ctx context.Context) *ServiceB {
-	s, err := dpi.InjectFromContext(ctx, &ServiceB{})
-	if err != nil {
-		panic(err)
-	}
-
-	return s
+	return dpi.MustInjectFromContext(ctx, new(ServiceB))
 }
-func NewServiceA(ctx context.Context) *ServiceA {
-	s := &ServiceA{}
-	if _, err := dpi.InjectFromContext(ctx, s); err != nil {
-		panic(err)
-	}
 
-	return s
+func NewServiceA(ctx context.Context) *ServiceA {
+	return dpi.MustInjectFromContext(ctx, new(ServiceA))
 }
 
 func TestLazyInjection(t *testing.T) {
@@ -79,7 +69,10 @@ func BenchmarkInjection(b *testing.B) {
 		c, cleanup := dpi.New(context.Background())
 		defer cleanup()
 
-		c.Provide(NewDBConn("defuault"), dpi.WithName("anotherDB", NewDBConn("anotherDB")))
+		c.Provide(
+			NewDBConn("hahaha"),
+			dpi.WithName("anotherDB", NewDBConn("anotherDB")),
+		)
 		c.Provide(
 			NewDBComsumer(c.Context()),
 		)
