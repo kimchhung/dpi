@@ -2,6 +2,13 @@
 Simple dependency injection base on context.Context from golang
 
 
+
+- support provide as value
+- support provide as pointer of value
+- support provide as custom name
+- won't support provide as interface, but can use provide as custom name for that eg, dpi.WithName("MyErrorName",error.New("test interface"))
+
+
 main.go
 
 ```
