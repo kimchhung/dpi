@@ -53,6 +53,7 @@ func (c *DPI) set(value any) {
 	dep := toDependency(value)
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
 	c.store[dep.Name()] = dep.Value()
 }
 
@@ -60,6 +61,17 @@ func (c *DPI) get(key string) any {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.store[key]
+}
+
+func (c *DPI) Get(dependency any) any {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	if depName, ok := dependency.(string); ok {
+		return c.store[depName]
+	}
+
+	return c.store[toDependency(dependency).Name()]
 }
 
 // wait for lazy injection, and validate

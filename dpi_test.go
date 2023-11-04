@@ -49,16 +49,32 @@ func NewServiceA(ctx context.Context) *ServiceA {
 func TestLazyInjection(t *testing.T) {
 	c, _ := dpi.New(context.Background())
 	ctx := c.Context()
+	ctx = dpi.ProvideWithContext(ctx, NewDBConn("db1"))
+	ctx = dpi.ProvideWithContext(ctx, dpi.WithName("db2", NewDBConn("db2")))
 
 	serviceA := NewServiceA(ctx)
 	serviceB := NewServiceB(ctx)
-	ctx = dpi.ProvideWithContext(ctx, serviceA, serviceB)
+
+	ctx = dpi.ProvideWithContext(ctx,
+		NewServiceA(ctx), serviceB)
 
 	dpi.FromContext(ctx).Wait()
 
 	if serviceA.ServiceB == nil || serviceB.ServiceA == nil {
 		t.Errorf("TestLazyInjection did not return services")
 	}
+
+	t.Run("test extract from ctx", func(t *testing.T) {
+		db := dpi.ExtractFromContext[*DBConn](ctx, &DBConn{})
+		db2 := dpi.ExtractFromContext[*DBConn](ctx, "db2")
+
+		if db.Name != "db1" {
+			t.Errorf("this should be db1")
+		}
+		if db2.Name != "db2" {
+			t.Errorf("this should be db2")
+		}
+	})
 }
 
 func BenchmarkInjection(b *testing.B) {

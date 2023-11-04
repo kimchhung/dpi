@@ -15,6 +15,14 @@ func ProvideWithContext(ctx context.Context, dependencies ...any) context.Contex
 	return c.Provide(dependencies...).Context()
 }
 
+/*
+Extract dependency directly from context.
+dpi.ExtractFromContext(ctx,&myDep{}) | dpi.ExtractFromContext(ctx,"mydep")
+*/
+func ExtractFromContext[T any](ctx context.Context, dependency any) T {
+	return FromContext(ctx).Get(dependency).(T)
+}
+
 // Validate only with tag  "inject:"true"", type ="true|lazy"
 func Validate[T any](r T, injectType ...string) error {
 	rv := reflect.ValueOf(r).Elem()
